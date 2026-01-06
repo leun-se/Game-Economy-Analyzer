@@ -1,0 +1,5 @@
+# Ignore generated data
+loot_data.json
+game_analytics.db
+*.class
+__pycache__/

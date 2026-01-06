@@ -20,6 +20,8 @@ public class LootGenerator {
                 // Inject some "bad" data to simulate a bug or cheater
                 if (i % 3 == 0){
                     value = -50; // Impossible value!
+                } else if (i % 4 == 0){
+                    item = "";
                 }
 
                 // Create a simple JSON string manually
