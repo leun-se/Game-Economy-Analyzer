@@ -1,10 +1,100 @@
-{"playerId": 101, "item": "RustyDagger", "value": -50}
-{"playerId": 448, "item": "EmptyBottle", "value": 105}
-{"playerId": 582, "item": "MagicRing", "value": 121}
-{"playerId": 911, "item": "RustyDagger", "value": -50}
-{"playerId": 725, "item": "", "value": 248}
-{"playerId": 667, "item": "GoldSword", "value": 314}
-{"playerId": 767, "item": "EmptyBottle", "value": -50}
-{"playerId": 858, "item": "MagicRing", "value": 55}
-{"playerId": 510, "item": "", "value": 97}
-{"playerId": 450, "item": "RustyDagger", "value": -50}
+{"playerId": 155, "item": "Rusty Dagger", "value": 4}
+{"playerId": 666, "item": "Rusty Dagger", "value": 4}
+{"playerId": 251, "item": "Rusty Dagger", "value": 4}
+{"playerId": 661, "item": "Health Potion", "value": 16}
+{"playerId": 63, "item": "Rusty Dagger", "value": 2}
+{"playerId": 404, "item": "Torn Cloth", "value": 2}
+{"playerId": 510, "item": "Rusty Dagger", "value": 2}
+{"playerId": 616, "item": "CorruptedShard", "value": -999}
+{"playerId": 238, "item": "Torn Cloth", "value": 3}
+{"playerId": 18, "item": "Torn Cloth", "value": 1}
+{"playerId": 117, "item": "Torn Cloth", "value": 2}
+{"playerId": 906, "item": "", "value": 50}
+{"playerId": 689, "item": "Torn Cloth", "value": 1}
+{"playerId": 492, "item": "GodModeSword", "value": 999999}
+{"playerId": 466, "item": "Torn Cloth", "value": 3}
+{"playerId": 794, "item": "Rusty Dagger", "value": 5}
+{"playerId": 279, "item": "Torn Cloth", "value": 3}
+{"playerId": 802, "item": "Torn Cloth", "value": 2}
+{"playerId": 630, "item": "Health Potion", "value": 15}
+{"playerId": 615, "item": "Wolf Pelt", "value": 5}
+{"playerId": 452, "item": "Rusty Dagger", "value": 5}
+{"playerId": 912, "item": "", "value": 50}
+{"playerId": 63, "item": "Torn Cloth", "value": 2}
+{"playerId": 65, "item": "Iron Sword", "value": 32}
+{"playerId": 983, "item": "Iron Sword", "value": 38}
+{"playerId": 592, "item": "GodModeSword", "value": 999999}
+{"playerId": 821, "item": "Rusty Dagger", "value": 5}
+{"playerId": 903, "item": "Wolf Pelt", "value": 6}
+{"playerId": 336, "item": "Torn Cloth", "value": 2}
+{"playerId": 530, "item": "Iron Sword", "value": 27}
+{"playerId": 403, "item": "Wolf Pelt", "value": 10}
+{"playerId": 435, "item": "Torn Cloth", "value": 2}
+{"playerId": 349, "item": "CorruptedShard", "value": -999}
+{"playerId": 188, "item": "Rusty Dagger", "value": 2}
+{"playerId": 810, "item": "Torn Cloth", "value": 2}
+{"playerId": 256, "item": "Wolf Pelt", "value": 7}
+{"playerId": 778, "item": "Torn Cloth", "value": 3}
+{"playerId": 28, "item": "Rusty Dagger", "value": 2}
+{"playerId": 67, "item": "Wolf Pelt", "value": 7}
+{"playerId": 747, "item": "Rusty Dagger", "value": 3}
+{"playerId": 598, "item": "", "value": 50}
+{"playerId": 986, "item": "Wolf Pelt", "value": 8}
+{"playerId": 793, "item": "Golden Ring", "value": 109}
+{"playerId": 598, "item": "Wolf Pelt", "value": 8}
+{"playerId": 989, "item": "CorruptedShard", "value": -999}
+{"playerId": 680, "item": "Iron Sword", "value": 34}
+{"playerId": 505, "item": "Torn Cloth", "value": 1}
+{"playerId": 659, "item": "Rusty Dagger", "value": 3}
+{"playerId": 998, "item": "Health Potion", "value": 15}
+{"playerId": 483, "item": "Torn Cloth", "value": 1}
+{"playerId": 734, "item": "Wolf Pelt", "value": 5}
+{"playerId": 850, "item": "Rusty Dagger", "value": 4}
+{"playerId": 234, "item": "Rusty Dagger", "value": 3}
+{"playerId": 258, "item": "Rusty Dagger", "value": 2}
+{"playerId": 513, "item": "Wolf Pelt", "value": 7}
+{"playerId": 304, "item": "Golden Ring", "value": 98}
+{"playerId": 203, "item": "CorruptedShard", "value": -999}
+{"playerId": 779, "item": "Iron Sword", "value": 38}
+{"playerId": 997, "item": "", "value": 50}
+{"playerId": 313, "item": "Wolf Pelt", "value": 9}
+{"playerId": 369, "item": "Rusty Dagger", "value": 5}
+{"playerId": 346, "item": "Wolf Pelt", "value": 5}
+{"playerId": 598, "item": "Wolf Pelt", "value": 8}
+{"playerId": 438, "item": "Rusty Dagger", "value": 4}
+{"playerId": 544, "item": "Torn Cloth", "value": 2}
+{"playerId": 981, "item": "Rusty Dagger", "value": 4}
+{"playerId": 575, "item": "Health Potion", "value": 16}
+{"playerId": 978, "item": "Wolf Pelt", "value": 8}
+{"playerId": 163, "item": "Torn Cloth", "value": 1}
+{"playerId": 156, "item": "Iron Sword", "value": 40}
+{"playerId": 996, "item": "Rusty Dagger", "value": 4}
+{"playerId": 702, "item": "Iron Sword", "value": 35}
+{"playerId": 634, "item": "Rusty Dagger", "value": 1}
+{"playerId": 769, "item": "Torn Cloth", "value": 3}
+{"playerId": 515, "item": "Wolf Pelt", "value": 8}
+{"playerId": 504, "item": "Iron Sword", "value": 26}
+{"playerId": 587, "item": "Rusty Dagger", "value": 5}
+{"playerId": 12, "item": "Health Potion", "value": 17}
+{"playerId": 460, "item": "Rusty Dagger", "value": 4}
+{"playerId": 537, "item": "Torn Cloth", "value": 2}
+{"playerId": 2, "item": "Wolf Pelt", "value": 7}
+{"playerId": 677, "item": "Torn Cloth", "value": 3}
+{"playerId": 992, "item": "Rusty Dagger", "value": 5}
+{"playerId": 165, "item": "Health Potion", "value": 16}
+{"playerId": 131, "item": "Wolf Pelt", "value": 6}
+{"playerId": 79, "item": "Iron Sword", "value": 30}
+{"playerId": 891, "item": "Wolf Pelt", "value": 9}
+{"playerId": 162, "item": "Rusty Dagger", "value": 5}
+{"playerId": 378, "item": "", "value": 50}
+{"playerId": 613, "item": "GodModeSword", "value": 999999}
+{"playerId": 290, "item": "Torn Cloth", "value": 3}
+{"playerId": 537, "item": "Health Potion", "value": 16}
+{"playerId": 26, "item": "Torn Cloth", "value": 3}
+{"playerId": 552, "item": "Rusty Dagger", "value": 1}
+{"playerId": 498, "item": "Wolf Pelt", "value": 9}
+{"playerId": 355, "item": "Wolf Pelt", "value": 10}
+{"playerId": 249, "item": "Rusty Dagger", "value": 2}
+{"playerId": 107, "item": "Torn Cloth", "value": 1}
+{"playerId": 172, "item": "Torn Cloth", "value": 3}
+{"playerId": 50, "item": "Rusty Dagger", "value": 2}
