@@ -1,33 +1,53 @@
 import json
-import sqlite3
+import time
+import os
+import mysql.connector
 from datetime import datetime
 
-def run_pipeline():
-    print("--- Starting Robust Pipeline ---")
-    clean_data = []
+def get_db_connection():
+    # Keep trying till MySQL wakes up
+    retries = 10
+    while retries > 0:
+        try:
+            print(f"Attempting to connect to MySQL... ({retries} left)")
+            conn = mysql.connector.connect(
+                host=os.getenv('DB_HOST'), 
+                user=os.getenv('DB_USER'),
+                password=os.getenv('DB_PASSWORD'),
+                database=os.getenv('DB_NAME')
+            )
+            print("Connected to MySQL!")
+            return conn
+        except mysql.connector.Error as err:
+            print(f"Database not ready yet: {err}")
+            time.sleep(5)
+            retries -= 1
+    raise Exception("Could not connect to MySQL after multiple attempts")
     
-    # Database setup
-    conn = sqlite3.connect('game_analytics.db')
+def run_pipeline():
+    print("--- Starting Microservice Pipeline ---")
+    
+    conn = get_db_connection()
     cursor = conn.cursor()
     
     # Create table (if it's not already there)
     # Table A: The clean data for analysts
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS valid_loot(
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            player_id INTEGER,
-            item_name TEXT,
-            item_value INTEGER
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            player_id INT,
+            item_name VARCHAR(255),
+            item_value INT
         )
     ''')
     
     # Table B: The "Dead Letter Queue" for rejects
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS suspicious_events (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            id INT AUTO_INCREMENT PRIMARY KEY,
             raw_record TEXT,
-            rejection_reason TEXT,
-            timestamp TEXT
+            rejection_reason VARCHAR(255),
+            timestamp VARCHAR(255)
         )      
     ''')
     
@@ -45,8 +65,8 @@ def run_pipeline():
             # Rule: Value cannot be negative or greater than 500
             if 0 <= val <=500 and name != "":
                 # PATH A: Success
-                cursor.execute("INSERT INTO valid_loot (player_id, item_name, item_value) VALUES (?, ?, ?)",
-                                (record['playerId'], record['item'], val))
+                cursor.execute("INSERT INTO valid_loot (player_id, item_name, item_value) VALUES (%s, %s, %s)",
+                                (record['playerId'], name, val))
                 valid_count += 1
             else:
                 # PATH B: Failure
@@ -58,13 +78,12 @@ def run_pipeline():
                 else:
                     reason = "MISSING_NAME"
             
-                cursor.execute("INSERT INTO suspicious_events (raw_record, rejection_reason, timestamp) VALUES (?, ?, ?)",
-                            (str(record), reason, datetime.now().isoformat()))
+                cursor.execute("INSERT INTO suspicious_events (raw_record, rejection_reason, timestamp) VALUES (%s, %s, %s)",
+                                (str(record), reason, datetime.now().isoformat()))
                 suspicious_count += 1
                 print(f"Dropping bad record: {record}")
     conn.commit()
-    
-    print(f"Pipeline Finished: {valid_count} valid records, {suspicious_count} suspicious events.")
+    print(f"Pipeline Finished: {valid_count} valid, {suspicious_count} suspicious.")
     
     # 3. VERIFY: Show the "Hacker" list
     print("\n--- SUSPICIOUS ACTIVITY REPORT ---")
