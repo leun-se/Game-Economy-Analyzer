@@ -64,6 +64,15 @@ if st.sidebar.button(f"🚀 Generate {amount} Drops"):
 if st.sidebar.button("🔄 Refresh View Only"):
     st.rerun()
 
+if st.sidebar.button("🗑️ Reset Database"):
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute("TRUNCATE TABLE valid_loot")
+    cursor.execute("TRUNCATE TABLE suspicious_events")
+    conn.close()
+    st.sidebar.success("Database wiped clean!")
+    st.rerun()
+    
 st.title("⚔️ Game Economy Real-Time Monitor")
 
 try:
@@ -101,9 +110,25 @@ try:
             st.info("No valid loot data yet.")
     
     with col_right:
-        st.subheader("🚨 Recent Security Alerts")
-        df_suspicious = pd.read_sql("SELECT rejection_reason, timestamp, raw_record FROM suspicious_events ORDER BY id DESC LIMIT 10", conn)
-        st.dataframe(df_suspicious, use_container_width=True)
+        st.subheader("🚨 Security Alerts")
+        
+        # 1. Fetch the data
+        df_security = pd.read_sql("""
+            SELECT rejection_reason, timestamp, raw_record 
+            FROM suspicious_events 
+            ORDER BY id DESC LIMIT 1000
+        """, conn)
+
+        if not df_security.empty:
+            # 2. THE CLEAN FEED
+            st.dataframe(
+                df_security, 
+                use_container_width=True, 
+                hide_index=True,
+                height=400  # Keeps the dashboard aligned
+            )
+        else:
+            st.success("No security alerts found.")
         
     st.divider()
 
@@ -114,65 +139,108 @@ try:
     df_spread = pd.read_sql("SELECT id, item_name, item_value FROM valid_loot", conn)
 
     if not df_spread.empty:
-        # 1. Filter
-        all_items = df_spread['item_name'].unique()
-        selected_items = st.multiselect("Select Loot Tables:", all_items, default=all_items)
-        filtered_spread = df_spread[df_spread['item_name'].isin(selected_items)]
+        # 1. OPTIMIZATION: Pre-calculate Statistics in Python
+        # This prevents sending thousands of raw rows to the browser
         
-        if not filtered_spread.empty:
-            # 1. UI Control
-            chart_style = st.radio(
-                "Select Visualization Style:", 
-                ["📦 Box Plot (Summary)", "🔵 Frequency Bubbles (Volume)"],
-                horizontal=True
-            )
+        # A. For Sorting & Filtering (Median)
+        item_stats = df_spread.groupby('item_name')['item_value'].median().sort_values()
+        sorted_items = item_stats.index.tolist()
 
-            # 2. Define the Base (Shared Data)
-            # note: 'item_name:N' tells Altair this is a Category (Nominal)
-            base = alt.Chart(filtered_spread).encode(
-                x=alt.X('item_name:N', title=None, axis=alt.Axis(grid=False, labelAngle=0)),
-                y=alt.Y('item_value:Q', title='Gold Value'),
-                color='item_name:N'
-            )
+        # B. For the "Ghost Layer" (Only need Min and Max to define zoom boundaries)
+        # Instead of plotting 10,000 points, we plot 2 points per item.
+        # This is the secret to 60fps zooming.
+        bounds_df = df_spread.groupby('item_name')['item_value'].agg(['min', 'max']).reset_index()
+        bounds_df = bounds_df.melt(id_vars='item_name', value_name='item_value')
 
+        # C. For the Bubbles (Pre-count frequencies)
+        bubble_df = df_spread.groupby(['item_name', 'item_value']).size().reset_index(name='count')
+
+        # 2. FILTER CONTROLS
+        selected_items = st.multiselect(
+            "Select Loot Tables to Inspect:", 
+            sorted_items, 
+            default=sorted_items[:5] 
+        )
+        
+        # Filter our optimized datasets
+        # Note: We filter the summary tables, not the raw massive table!
+        filtered_bounds = bounds_df[bounds_df['item_name'].isin(selected_items)]
+        filtered_bubbles = bubble_df[bubble_df['item_name'].isin(selected_items)]
+        
+        # We still need the raw data for the Box Plot stats calculation, but NOT for plotting
+        filtered_raw = df_spread[df_spread['item_name'].isin(selected_items)]
+
+        if not filtered_bounds.empty:
+            # 3. UI CONTROLS
+            col_controls1, col_controls2 = st.columns([2, 1])
+            with col_controls1:
+                chart_style = st.radio(
+                    "Select Visualization Style:", 
+                    ["📦 Box Plot (Summary)", "🔵 Frequency Bubbles (Volume)"],
+                    horizontal=True
+                )
+            with col_controls2:
+                use_log_scale = st.checkbox("Use Log Scale", value=False)
+
+            y_scale = alt.Scale(type='symlog') if use_log_scale else alt.Scale(type='linear')
+
+            # 4. CHART CONSTRUCTION
+            
             if chart_style == "📦 Box Plot (Summary)":
-                # A. The Visual Layer (The Box Plot)
+                # Base for Box Plot uses the RAW data (Altair handles box stats efficiently)
+                base = alt.Chart(filtered_raw).properties(height=600).encode(
+                    x=alt.X('item_name:N', title=None, axis=alt.Axis(grid=False, labelAngle=0)),
+                    y=alt.Y('item_value:Q', title='Gold Value', scale=y_scale),
+                    color=alt.Color('item_name:N', legend=None)
+                )
+
                 visual_box = base.mark_boxplot(
                     extent='min-max', 
-                    size=50,
-                    rule={'strokeWidth': 4},
-                    median={'strokeWidth': 4, 'color': 'black'},
+                    size=80,
+                    opacity=0.7,
+                    rule={'strokeWidth': 3, 'color': 'white'},
+                    ticks={'strokeWidth': 3, 'color': 'white', 'size': 20},
+                    median={'strokeWidth': 4, 'color': 'white'},
                     box={'strokeWidth': 2}
                 )
                 
-                # B. The Interaction Layer (The "Ghost")
-                # We plot invisible points (opacity=0) just to catch the mouse scroll
-                ghost_layer = base.mark_circle(opacity=0).encode(
+                # --- OPTIMIZED GHOST LAYER ---
+                # We use 'filtered_bounds' (tiny) instead of 'filtered_raw' (huge)
+                # The Zoom Engine thinks it's looking at the whole dataset, but it's just the edges.
+                ghost_layer = alt.Chart(filtered_bounds).mark_circle(opacity=0).encode(
+                    x='item_name:N',
+                    y='item_value:Q',
                     tooltip=[alt.Tooltip('item_name', title='Item')]
-                ).interactive() # <--- This handles the zoom!
+                ).interactive()
                 
-                # Combine them: The Ghost controls the scale for the Box
                 final_chart = visual_box + ghost_layer
             
             else:
-                # View B: The Frequency Bubbles
-                # These are simple shapes, so they support native interactive()
+                # OPTIMIZED BUBBLES
+                # We use 'filtered_bubbles' where counts are already calculated
+                base = alt.Chart(filtered_bubbles).properties(height=600).encode(
+                    x=alt.X('item_name:N', title=None, axis=alt.Axis(grid=False, labelAngle=0)),
+                    y=alt.Y('item_value:Q', title='Gold Value', scale=y_scale),
+                    color=alt.Color('item_name:N', legend=None)
+                )
+                
                 final_chart = base.mark_circle().encode(
-                    size=alt.Size('count()', title='Count', scale=alt.Scale(range=[50, 500])),
-                    tooltip=['item_name', 'item_value', alt.Tooltip('count()', title='Count')]
+                    # We use the pre-calculated 'count' column
+                    size=alt.Size('count', title='Count', scale=alt.Scale(range=[50, 1000])),
+                    tooltip=['item_name', 'item_value', alt.Tooltip('count', title='Count')]
                 ).interactive()
 
-            # 3. Render
+            # 5. RENDER
             st.altair_chart(
                 final_chart, 
-                use_container_width=True,
-                theme="streamlit",
-                key="rng_chart_v4" # Bump key to force refresh
+                use_container_width=True, 
+                theme="streamlit", 
+                key=f"rng_chart_opt_{use_log_scale}"
             )
             
-            # 5. Stats Table
+            # 6. STATISTICS
             st.caption("Detailed Statistics")
-            stats = filtered_spread.groupby("item_name")['item_value'].describe()
+            stats = filtered_raw.groupby("item_name")['item_value'].describe()
             stats = stats[['count', 'mean', 'min', '25%', '50%', '75%', 'max']]
             stats.columns = ['Count', 'Avg', 'Min', 'Q1', 'Median', 'Q3', 'Max']
             st.dataframe(stats.style.format("{:.2f}"))
