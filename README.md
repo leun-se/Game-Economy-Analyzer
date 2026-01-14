@@ -1,71 +1,69 @@
-# ⚔️ Game Economy Simulation & Analytics Platform
+# Game Economy Simulation & Analytics Pipeline
 
-A full-stack data engineering pipeline that simulates, validates, and visualizes game economy data in real-time. This project demonstrates an end-to-end flow from a Java-based RNG simulation to a Python data ingestion pipeline, stored in MySQL, and controlled via a Streamlit dashboard.
+A full-stack data engineering project that simulates a live MMO game economy, processes transaction streams in real-time, and visualizes economic health using a custom-built dashboard.
 
-## 🏗️ Architecture
+The goal of this project was to build a resilient pipeline capable of distinguishing between legitimate "high-roller" transactions (rare drops) and actual game-breaking exploits (duped items/integer overflows), while optimizing frontend performance for large datasets.
 
-The system runs entirely within a containerized **Docker** environment consisting of two main services:
+### 🏗 Architecture
 
-1.  **Service A (App):** A hybrid Python/Java container.
-    * **Java:** Generates loot drops with configurable rarity, value variance, and intentional "chaos/glitch" data for testing.
-    * **Python:** Orchestrates the pipeline, sanitizes data (removing glitches), and ingests valid records into MySQL.
-    * **Streamlit:** Provides the frontend UI for control and visualization.
-2.  **Service B (Database):** MySQL 8.0 instance with persistent storage.
+The system runs entirely in a containerized **Docker** environment with three distinct services:
 
-**Data Flow:**
-`User Trigger (UI)` → `Java CLI (Generation)` → `JSON File` → `Python Pandas (Cleaning)` → `MySQL (Storage)` → `Altair (Visualization)`
+* **Generator (Java):** Simulates loot drops using Gaussian distributions and relative volatility logic.
+* **Pipeline (Python):** An ETL process that validates raw JSON logs, filters corrupt data, and loads clean records into MySQL.
+* **Dashboard (Streamlit):** An interactive analytics tool with custom Altair visualizations and 60fps zooming optimizations.
 
-## 🚀 Getting Started
+**Tech Stack:** `Java` `Python` `MySQL` `Docker` `Streamlit` `Pandas` `Altair`
 
-### Prerequisites
-* Docker Desktop installed and running.
+---
 
-### Installation
+### 🚀 Key Features
+
+#### 1. Realistic Economy Simulation (Java)
+Instead of simple random numbers, the loot generator uses **Gaussian Math (Normal Distribution)** to simulate realistic market fluctuations.
+* **Proportional Volatility:** Item prices fluctuate by a percentage (e.g., ±20%) rather than a fixed flat amount.
+* **Rarity Tiers:** Handles everything from "Common Trash" to "Legendary Artifacts."
+* **Chaos Engineering:** Randomly injects "bad data" (negative values, missing fields) and "exploits" (values > server cap) to test pipeline resilience.
+
+#### 2. Security & Validation (Python ETL)
+The pipeline acts as a firewall between the raw logs and the analytics database.
+* **Exploit Detection:** Automatically flags items exceeding the global gold cap (e.g., > 2,000g) as "Duped Items" and routes them to a separate Security Table.
+* **Data Cleaning:** Catches integer overflows and malformed JSON before they hit the database.
+* **Valid Outliers:** Smart filtering allows legitimate rare drops (e.g., a 1,500g Dragon Egg) to pass through while blocking illegal 10,000g hacks.
+
+#### 3. Optimized Analytics Dashboard
+A custom frontend built to handle high-density data without browser lag.
+* **"Ghost Layer" Rendering:** Solved a rendering bottleneck by pre-calculating outliers in Python. The chart draws a summary Box Plot and only renders interactive tooltips for specific outliers, reducing DOM elements by 99%.
+* **Dynamic Log Scaling:** Includes a toggleable Logarithmic Scale to visualize massive gaps between common items (10g) and rare artifacts (1,500g).
+* **Live Security Feed:** A dedicated scrollable widget for monitoring rejected transactions in real-time.
+
+---
+
+### 🛠️ How to Run
+
+**Prerequisites:** Docker Desktop installed.
+
 1.  **Clone the repository:**
     ```bash
-    git clone [https://github.com/yourusername/game-economy-monitor.git](https://github.com/yourusername/game-economy-monitor.git)
-    cd game-economy-monitor
+    git clone <your-repo-url>
+    cd game-economy-pipeline
     ```
 
-2.  **Create your Environment Variables:**
-    Create a `.env` file in the root directory:
-    ```env
-    DB_HOST=db
-    DB_USER=root
-    DB_PASSWORD=root
-    DB_NAME=game_economy
-    ```
-
-3.  **Run the Stack:**
+2.  **Start the services:**
     ```bash
     docker-compose up --build
     ```
 
-4.  **Access the Dashboard:**
+3.  **Access the Dashboard:**
     Open your browser to `http://localhost:8501`.
 
-## 🎮 Features
+4.  **Simulate Data:**
+    * Use the sidebar to **"Generate 1000 Drops"**.
+    * Watch the pipeline compile the Java code, generate logs, and ingest them instantly.
+    * Toggle **"Frequency Bubbles"** to see the Gaussian distribution in action.
 
-### 1. The Control Plane
-Unlike static dashboards, this platform allows users to generate data on demand.
-* **Dynamic Generation:** Specify the exact number of loot drops (10 - 10,000).
-* **Hybrid Execution:** The Python dashboard spins up a subprocess to compile and run the Java generator inside the container, ensuring version compatibility.
+---
 
-### 2. Real-Time Data Pipeline
-* **Validation Logic:** Automatically detects and rejects "glitch" data (negative values, missing names) generated by the Chaos mode.
-* **Security Auditing:** Logs rejected rows into a separate `suspicious_events` table for review.
+### 🧪 Engineering Trade-offs
 
-### 3. Advanced Visualization (RNG Analysis)
-Analyze the fairness and distribution of the Random Number Generator using interactive Altair charts.
-* **Toggleable Views:** Switch between **Box Plots** (for statistical range) and **Frequency Bubbles** (for drop volume).
-* **Detailed Statistics:** Auto-calculated Min/Max, Average, and Interquartile Ranges (Q1/Q3).
-
-## 💡 Technical Highlights
-
-### The "Ghost Layer" Solution
-**Challenge:** The Altair visualization library does not support native zooming on composite charts like Box Plots.
-**Solution:** Implemented a "Ghost Layer"—an invisible scatter plot layered on top of the box plot. This captures user interaction events (scroll/pan) and drives the shared coordinate system, enabling full interactivity on complex statistical charts.
-
-### Containerized Hybrid Runtime
-**Challenge:** Running Java code from a Python-based Docker container.
-**Solution:** Custom `Dockerfile` that installs OpenJDK alongside Python 3.10. The pipeline compiles Java source code at runtime (`subprocess.run(['javac', ...])`) to prevent `class file version` conflicts between the host (Windows/Mac) and the container (Linux).
+* **Handling Outliers:** I initially tried to plot every single data point, but this caused significant browser lag when zooming. I switched to a hybrid approach: using Altair to render the statistical box plot and a separate "Ghost Layer" specifically for outlier interaction. This maintained statistical accuracy while keeping the UI responsive.
+* **Visualizing Scale:** A linear scale made common items look like a flat line when high-value items were present. Implementing a dynamic **Symlog (Symmetric Log)** scale allows analysts to compare the "Rusty Dagger" and "Dragon Egg" side-by-side without losing detail.
