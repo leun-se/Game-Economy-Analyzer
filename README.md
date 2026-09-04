@@ -44,7 +44,7 @@ A custom frontend built to handle high-density data without browser lag.
 
 1.  **Clone the repository:**
     ```bash
-    git clone <your-repo-url>
+    git clone <https://github.com/leun-se/Game-Economy-Analyzer.git>
     cd game-economy-pipeline
     ```
 
