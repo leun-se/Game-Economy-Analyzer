@@ -40,12 +40,12 @@ A custom frontend built to handle high-density data without browser lag.
 
 ### 🛠️ How to Run
 
-**Prerequisites:** Docker Desktop installed.
+**Prerequisites:** Docker Desktop installed and running.
 
 1.  **Clone the repository:**
     ```bash
     git clone <https://github.com/leun-se/Game-Economy-Analyzer.git>
-    cd game-economy-pipeline
+    cd Game-Economy-Analyzer
     ```
 
 2.  **Start the services:**
